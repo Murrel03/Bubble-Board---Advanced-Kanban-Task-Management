@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bubble Board</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Quicksand&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+  <!-- Moving Bubbles Background -->
+  <div class="bubbles-container">
+    <div class="bubble bubble-1"></div>
+    <div class="bubble bubble-2"></div>
+    <div class="bubble bubble-3"></div>
+    <div class="bubble bubble-4"></div>
+    <div class="bubble bubble-5"></div>
+    <div class="bubble bubble-6"></div>
+    <div class="bubble bubble-7"></div>
+    <div class="bubble bubble-8"></div>
+    <div class="bubble bubble-9"></div>
+    <div class="bubble bubble-10"></div>
+    <div class="bubble bubble-11"></div>
+    <div class="bubble bubble-12"></div>
+    <div class="bubble bubble-13"></div>
+    <div class="bubble bubble-14"></div>
+    <div class="bubble bubble-15"></div>
+    <div class="bubble bubble-16"></div>
+  </div>
+
+  <div class="app">
+    <header class="app-header">
+      <h1><i class="fas fa-bubbles"></i> Bubble Board</h1>
+      <div class="header-controls">
+        <div class="search-container">
+          <input type="text" id="searchInput" placeholder="Search tasks..." class="search-input">
+          <button class="search-btn" onclick="searchTasks()">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+
+        <div class="theme-selector">
+          <select id="themeSelect" onchange="changeTheme()">
+            <option value="light">🌞 Light Mode</option>
+            <option value="dark">🌙 Dark Mode</option>
+            <option value="reading">📖 Reading Mode</option>
+            <option value="calm-blue">🌊 Calm Blue</option>
+            <option value="energetic-orange">🔥 Energetic Orange</option>
+            <option value="romantic-purple">💜 Romantic Purple</option>
+          </select>
+          <div class="theme-preview" id="themePreview"></div>
+        </div>
+        <div class="action-buttons">
+          <button class="action-btn" onclick="toggleSelectionMode()" id="selectBtn" title="Select Multiple">
+            <i class="fas fa-check-square"></i>
+          </button>
+          <button class="action-btn" onclick="undoAction()" id="undoBtn" title="Undo (Ctrl+Z)" disabled>
+            <i class="fas fa-undo"></i>
+          </button>
+          <button class="action-btn" onclick="redoAction()" id="redoBtn" title="Redo (Ctrl+Y)" disabled>
+            <i class="fas fa-redo"></i>
+          </button>
+          <button class="action-btn" onclick="exportToPDF()" title="Export to PDF">
+            <i class="fas fa-file-pdf"></i>
+          </button>
+          <button class="action-btn" onclick="createBackup()" title="Create Backup">
+            <i class="fas fa-save"></i>
+          </button>
+          <button class="action-btn" onclick="showBackupManager()" title="Manage Backups">
+            <i class="fas fa-database"></i>
+          </button>
+          <button class="action-btn" onclick="exportData()" title="Export Data">
+            <i class="fas fa-download"></i>
+          </button>
+          <button class="action-btn" onclick="importData()" title="Import Data">
+            <i class="fas fa-upload"></i>
+          </button>
+        </div>
+        <button class="add-card-btn" onclick="showAddCardModal()" id="addCardBtn">
+          <i class="fas fa-plus"></i> Add Card
+        </button>
+      </div>
+    </header>
+
+    <div class="kanban-board">
+      <div class="column">
+        <div class="column-header">
+          <h2><i class="fas fa-list"></i> To Do</h2>
+          <span class="card-count" id="todo-count">0</span>
+        </div>
+        <div class="card-list" id="todo" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        <button class="add-card-column-btn" onclick="addCard('todo')">
+          <i class="fas fa-plus"></i> Add Card
+        </button>
+      </div>
+      
+      <div class="column">
+        <div class="column-header">
+          <h2><i class="fas fa-play"></i> Doing</h2>
+          <span class="card-count" id="doing-count">0</span>
+        </div>
+        <div class="card-list" id="doing" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        <button class="add-card-column-btn" onclick="addCard('doing')">
+          <i class="fas fa-plus"></i> Add Card
+        </button>
+      </div>
+      
+      <div class="column">
+        <div class="column-header">
+          <h2><i class="fas fa-eye"></i> Review</h2>
+          <span class="card-count" id="review-count">0</span>
+        </div>
+        <div class="card-list" id="review" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        <button class="add-card-column-btn" onclick="addCard('review')">
+          <i class="fas fa-plus"></i> Add Card
+        </button>
+      </div>
+      
+      <div class="column">
+        <div class="column-header">
+          <h2><i class="fas fa-check"></i> Done</h2>
+          <span class="card-count" id="done-count">0</span>
+        </div>
+        <div class="card-list" id="done" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        <button class="add-card-column-btn" onclick="addCard('done')">
+          <i class="fas fa-plus"></i> Add Card
+        </button>
+      </div>
+    </div>
+
+    <!-- Bulk Actions Bar -->
+    <div id="bulkActionsBar" class="bulk-actions-bar">
+      <div class="bulk-info">
+        <span id="selectedCount">0</span> cards selected
+      </div>
+      <div class="bulk-actions">
+        <button class="bulk-btn" onclick="deleteSelectedCards()">
+          <i class="fas fa-trash"></i> Delete Selected
+        </button>
+        <button class="bulk-btn" onclick="clearSelection()">
+          <i class="fas fa-times"></i> Clear Selection
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Card Modal -->
+  <div id="addCardModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add New Card</h3>
+        <span class="close" onclick="closeModal()">&times;</span>
+      </div>
+      <form id="addCardForm">
+        <div class="form-group">
+          <label for="cardTitle">Title:</label>
+          <input type="text" id="cardTitle" required placeholder="Enter card title...">
+        </div>
+        <div class="form-group">
+          <label for="cardDescription">Description:</label>
+          <textarea id="cardDescription" placeholder="Enter card description..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cardPriority">Priority:</label>
+            <select id="cardPriority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="cardColumn">Column:</label>
+            <select id="cardColumn">
+              <option value="todo">To Do</option>
+              <option value="doing">Doing</option>
+	      <option value="review">Review</option>
+              <option value="done">Done</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cardDueDate">Due Date:</label>
+            <input type="date" id="cardDueDate">
+          </div>
+          <div class="form-group">
+            <label for="cardReminder">Reminder:</label>
+            <select id="cardReminder">
+              <option value="">No reminder</option>
+              <option value="5">5 minutes before</option>
+              <option value="15">15 minutes before</option>
+              <option value="30">30 minutes before</option>
+              <option value="60">1 hour before</option>
+              <option value="1440">1 day before</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="cardSubtasks">Subtasks:</label>
+          <div class="subtasks-input-container">
+            <div id="subtasksDisplay" class="subtasks-display"></div>
+            <div class="subtask-input-row">
+              <input type="text" id="subtaskInput" placeholder="Type subtask and press Enter...">
+              <button type="button" onclick="addSubtaskFromInput()" class="btn-secondary">Add</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="cardTags">Tags:</label>
+          <div class="tags-input-container">
+            <div id="tagsDisplay" class="tags-display"></div>
+            <input type="text" id="tagInput" placeholder="Type tag and press Enter...">
+          </div>
+          <div class="available-tags">
+            <span class="tag-option" onclick="addTag('work')">work</span>
+            <span class="tag-option" onclick="addTag('personal')">personal</span>
+            <span class="tag-option" onclick="addTag('urgent')">urgent</span>
+            <span class="tag-option" onclick="addTag('idea')">idea</span>
+            <span class="tag-option" onclick="addTag('bug')">bug</span>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Add Card</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Card Detail Modal -->
+  <div id="cardDetailModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="detailCardTitle">Card Details</h3>
+        <span class="close" onclick="closeDetailModal()">&times;</span>
+      </div>
+      <div class="card-detail-content">
+        <div class="form-group">
+          <label>Title:</label>
+          <input type="text" id="detailTitle" class="detail-input">
+        </div>
+        <div class="form-group">
+          <label>Description:</label>
+          <textarea id="detailDescription" class="detail-input"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Priority:</label>
+            <select id="detailPriority" class="detail-input">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Due Date:</label>
+            <input type="date" id="detailDueDate" class="detail-input">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Reminder:</label>
+          <select id="detailReminder" class="detail-input">
+            <option value="">No reminder</option>
+            <option value="5">5 minutes before</option>
+            <option value="15">15 minutes before</option>
+            <option value="30">30 minutes before</option>
+            <option value="60">1 hour before</option>
+            <option value="1440">1 day before</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tags:</label>
+          <div class="tags-input-container">
+            <div id="detailTagsDisplay" class="tags-display"></div>
+            <input type="text" id="detailTagInput" placeholder="Type tag and press Enter...">
+          </div>
+          <div class="available-tags">
+            <span class="tag-option" onclick="addDetailTag('work')">work</span>
+            <span class="tag-option" onclick="addDetailTag('personal')">personal</span>
+            <span class="tag-option" onclick="addDetailTag('urgent')">urgent</span>
+            <span class="tag-option" onclick="addDetailTag('idea')">idea</span>
+            <span class="tag-option" onclick="addDetailTag('bug')">bug</span>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" onclick="deleteCard()" class="btn-danger">Delete</button>
+          <button type="button" onclick="saveCardChanges()" class="btn-primary">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reminder Notification -->
+  <div id="reminderNotification" class="reminder-notification">
+    <div class="reminder-content">
+      <i class="fas fa-bell"></i>
+      <div class="reminder-text">
+        <h4 id="reminderTitle">Task Reminder</h4>
+        <p id="reminderMessage">You have a task due soon!</p>
+      </div>
+      <button class="reminder-close" onclick="closeReminder()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html> 
